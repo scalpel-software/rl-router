@@ -1,0 +1,15 @@
+{
+  "presets": ["@babel/preset-env", "@babel/preset-react"],
+  "plugins": [
+    ["lodash", { "id": ["lodash", "recompose"] }]
+  ],
+  "env": {
+    "commonjs": {
+      "presets": ["@babel/preset-env", "@babel/preset-react"]
+    },
+    "coverage": {
+      "presets": ["env", "react"],
+      "plugins": [ [ "istanbul", { "ignore": "test" } ] ]
+    }
+  }
+}

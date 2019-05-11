@@ -1,0 +1,15 @@
+---
+extends:
+  - "formidable/configurations/es6-react-test"
+  - "../.eslintrc"
+
+env:
+  mocha: true
+
+globals:
+  sandbox: true
+
+rules:
+  no-unused-expressions: "off"
+  react/no-multi-comp: "off"
+

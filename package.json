@@ -1,0 +1,68 @@
+{
+  "name": "rl-router",
+  "version": "0.1.0",
+  "description": "A barebones routing solution for Redux applications",
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "scripts": {
+    "version": "npm run clean && npm run build",
+    "build": "builder concurrent --buffer build-lib build-dist build-es",
+    "clean": "builder concurrent clean-lib clean-dist clean-es",
+    "build-dist-min": "webpack --bail --config config/webpack/webpack.config.js",
+    "build-dist-dev": "webpack --bail --config config/webpack/webpack.config.dev.js",
+    "build-dist": "builder concurrent --buffer build-dist-min build-dist-dev",
+    "clean-dist": "rimraf dist",
+    "build-es": "babel src -d es --copy-files",
+    "clean-es": "rimraf es",
+    "watch-es": "watch 'npm run build-es' src/ -d",
+    "clean-lib": "rimraf lib",
+    "build-lib": "BABEL_ENV=commonjs babel src -d lib --copy-files",
+    "watch-lib": "watch 'npm run build-lib' src/ -d",
+    "test": "mocha --require @babel/register test/.setup.js 'test/**/*.spec.js'"
+  },
+  "keywords": [
+    "redux",
+    "router",
+    "middleware"
+  ],
+  "author": "Thomas Cioppettini",
+  "license": "MIT",
+  "dependencies": {
+    "history": "^4.9.0",
+    "query-string": "^6.5.0",
+    "recompose": "^0.30.0",
+    "url-pattern": "^1.0.3"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.4",
+    "@babel/preset-env": "^7.4.4",
+    "@babel/preset-react": "^7.0.0",
+    "@babel/register": "^7.4.4",
+    "babel-loader": "^8.0.5",
+    "babel-plugin-lodash": "^3.3.4",
+    "builder": "^4.0.0",
+    "chai": "^4.2.0",
+    "enzyme": "^3.9.0",
+    "enzyme-adapter-react-16": "^1.12.1",
+    "immutable": "^4.0.0-rc.12",
+    "jsdom": "^15.0.0",
+    "mocha": "^6.1.4",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-redux": "^7.0.3",
+    "redux": "^4.0.1",
+    "redux-immutable": "^4.0.0",
+    "rimraf": "^2.6.3",
+    "sinon": "^7.3.2",
+    "sinon-chai": "^3.3.0",
+    "terser-webpack-plugin": "^1.2.3",
+    "webpack": "^4.31.0",
+    "webpack-cli": "^3.3.2"
+  },
+  "peerDependencies": {
+    "react": "^0.14.0 || ^15.0.0 || ^16.0.0",
+    "react-dom": "^0.14.0 || ^15.0.0 || ^16.0.0",
+    "react-redux": "^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0"
+  }
+}
