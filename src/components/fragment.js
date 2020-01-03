@@ -1,5 +1,6 @@
 import UrlPattern from 'url-pattern';
 import React, { Children, Component, createFactory } from 'react';
+import compose from "../util/compose";
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
@@ -195,21 +196,21 @@ export class FragmentComponent extends Component {
   }
 }
 
-export const withIdAndContext = getContext({
-  parentRoute: PropTypes.string,
-  parentId: PropTypes.string
-})(
-  withId(
-    withContext(
-      {
-        parentRoute: PropTypes.string,
-        parentId: PropTypes.string
-      },
-      props => ({
-        parentRoute: resolveChildRoute(props.parentRoute, props.forRoute),
-        parentId: props.id
-      })
-    )
+export const withIdAndContext = compose(
+  getContext({
+    parentRoute: PropTypes.string,
+    parentId: PropTypes.string
+  }),
+  withId,
+  withContext(
+    {
+      parentRoute: PropTypes.string,
+      parentId: PropTypes.string
+    },
+    props => ({
+      parentRoute: resolveChildRoute(props.parentRoute, props.forRoute),
+      parentId: props.id
+    })
   )
 );
 
@@ -217,4 +218,7 @@ function mapStateToProps(state) {
   return { location: state.router }
 }
 
-export default connect(mapStateToProps)(withIdAndContext(FragmentComponent));
+export default compose(
+  connect(mapStateToProps),
+  withIdAndContext
+)(FragmentComponent);
