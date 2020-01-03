@@ -1,12 +1,74 @@
 import UrlPattern from 'url-pattern';
-import React, { Children, Component } from 'react';
+import React, { Children, Component, createFactory } from 'react';
 import { connect } from 'react-redux';
-import { compose, withContext, getContext } from 'recompose';
 import PropTypes from 'prop-types';
 
 import matchCache from '../util/match-cache';
 import generateId from '../util/generate-id';
 import throwError from '../util/throw-error';
+
+const setStatic = (key, value) => BaseComponent => {
+  /* eslint-disable no-param-reassign */
+  BaseComponent[key] = value
+  /* eslint-enable no-param-reassign */
+  return BaseComponent
+}
+
+const getDisplayName = (Component) => {
+  if (typeof Component === 'string') {
+    return Component
+  }
+
+  if (!Component) {
+    return undefined
+  }
+
+  return Component.displayName || Component.name || 'Component'
+}
+
+const wrapDisplayName = (BaseComponent, hocName) => {
+  return `${hocName}(${getDisplayName(BaseComponent)})`;
+}
+
+const getContext = contextTypes => BaseComponent => {
+  const factory = createFactory(BaseComponent)
+  const GetContext = (ownerProps, context) =>
+    factory({
+      ...ownerProps,
+      ...context,
+    })
+
+  GetContext.contextTypes = contextTypes
+
+  if (process.env.NODE_ENV !== 'production') {
+    return setStatic('displayName', wrapDisplayName(BaseComponent, 'getContext'))(
+      GetContext
+    )
+  }
+  return GetContext
+}
+
+const withContext = (childContextTypes, getChildContext) => BaseComponent => {
+  const factory = createFactory(BaseComponent)
+  class WithContext extends Component {
+    getChildContext = () => {
+      return getChildContext(this.props)
+    }
+
+    render() {
+      return factory(this.props)
+    }
+  }
+
+  WithContext.childContextTypes = childContextTypes
+
+  if (process.env.NODE_ENV !== 'production') {
+    return setStatic('displayName', wrapDisplayName(BaseComponent, 'withContext'))(
+      WithContext
+    )
+  }
+  return WithContext
+}
 
 const withId = ComposedComponent =>
   class WithId extends Component {
@@ -85,15 +147,9 @@ export class FragmentComponent extends Component {
     this.matcher = (currentRoute && new UrlPattern(currentRoute)) || null;
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.forRoute !== nextProps.forRoute) {
+  componentDidUpdate(prevProps, _prevState, _snapshot) {
+    if (this.props.forRoute !== prevProps.forRoute) {
       throwError('Updating route props is not yet supported')();
-    }
-
-    // When Fragment rerenders, matchCache can get out of sync.
-    // Blow it away at the root Fragment on every render.
-    if (!this.props.parentId) {
-      matchCache.clear();
     }
   }
 
@@ -116,6 +172,10 @@ export class FragmentComponent extends Component {
       location
     });
 
+    // When Fragment rerenders, matchCache can get out of sync.
+    // Blow it away at the root Fragment on every render.
+    if (!parentId) { matchCache.clear(); }
+
     if (!shouldShow && !forNoMatch) {
       return null;
     }
@@ -135,21 +195,21 @@ export class FragmentComponent extends Component {
   }
 }
 
-export const withIdAndContext = compose(
-  getContext({
-    parentRoute: PropTypes.string,
-    parentId: PropTypes.string
-  }),
-  withId,
-  withContext(
-    {
-      parentRoute: PropTypes.string,
-      parentId: PropTypes.string
-    },
-    props => ({
-      parentRoute: resolveChildRoute(props.parentRoute, props.forRoute),
-      parentId: props.id
-    })
+export const withIdAndContext = getContext({
+  parentRoute: PropTypes.string,
+  parentId: PropTypes.string
+})(
+  withId(
+    withContext(
+      {
+        parentRoute: PropTypes.string,
+        parentId: PropTypes.string
+      },
+      props => ({
+        parentRoute: resolveChildRoute(props.parentRoute, props.forRoute),
+        parentId: props.id
+      })
+    )
   )
 );
 
@@ -157,6 +217,4 @@ function mapStateToProps(state) {
   return { location: state.router }
 }
 
-export default compose(connect(mapStateToProps), withIdAndContext)(
-  FragmentComponent
-);
+export default connect(mapStateToProps)(withIdAndContext(FragmentComponent));
