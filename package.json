@@ -1,6 +1,6 @@
 {
   "name": "rl-router",
-  "version": "0.3.0-2",
+  "version": "0.3.0-3",
   "description": "A barebones routing solution for Redux applications",
   "main": "lib/index.js",
   "module": "es/index.js",

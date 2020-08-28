@@ -8,12 +8,8 @@ export const createBrowserRouter = (installer) => ({
   historyOptions = {},
   history = createBrowserHistory({ basename, ...historyOptions })
 }) => {
-  const {
-    pathname: fullPathname,
-    search,
-    hash,
-    state: { key, state } = {}
-  } = history.location;
+  let {pathname: fullPathname, search, hash, state: locationState} = history.location;
+  let {key, state} = (locationState || {});
 
   // Strip the basename from the initial pathname
   const pathname =
